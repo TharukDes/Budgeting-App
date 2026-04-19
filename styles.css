@@ -362,32 +362,33 @@ button.primary:hover {
 .summary-hero-grid {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
 .summary-hero {
   margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
-  color: var(--muted);
+  padding: 14px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.28), 0 0 0 1px rgba(16, 185, 129, 0.2) inset;
+  display: grid;
+  gap: 8px;
+  color: #c7d2fe;
 }
 
 .summary-hero span {
   color: inherit;
-  font-size: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
 }
 
 .summary-hero strong {
-  color: var(--text);
-  font-size: 1.05rem;
+  color: #ffffff;
+  font-size: clamp(1.65rem, 3.2vw, 2.2rem);
+  line-height: 1;
+  font-weight: 800;
 }
 
 .summary-row {
