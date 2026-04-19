@@ -112,8 +112,30 @@
             <p id="errorMessage" class="error" aria-live="polite"></p>
           </section>
 
+          <section class="card" aria-labelledby="templates-heading">
+            <h2 id="templates-heading">Quick Templates</h2>
+            <div class="template-grid" id="expenseTemplates">
+              <button class="template-btn" type="button" data-name="Rent" data-category="Housing">Rent</button>
+              <button class="template-btn" type="button" data-name="Groceries" data-category="Food">Groceries</button>
+              <button class="template-btn" type="button" data-name="Gas" data-category="Transport">Gas</button>
+              <button class="template-btn" type="button" data-name="Phone Bill" data-category="Utilities">Phone Bill</button>
+            </div>
+          </section>
+
           <section class="card" aria-labelledby="list-heading">
             <h2 id="list-heading">Expense List</h2>
+            <div class="filter-grid">
+              <label class="field">
+                <span>Search expenses</span>
+                <input id="expenseSearch" type="text" placeholder="Search by name" />
+              </label>
+              <label class="field">
+                <span>Filter by category</span>
+                <select id="expenseCategoryFilter">
+                  <option value="all">All categories</option>
+                </select>
+              </label>
+            </div>
             <ul id="expenseList" class="expense-list"></ul>
             <p id="emptyState" class="empty">No expenses added yet.</p>
           </section>
@@ -151,6 +173,28 @@
             <p class="summary-row"><span>Selected month total</span><strong id="historyTotal">$0.00</strong></p>
             <ul id="historyList" class="expense-list"></ul>
             <p id="historyEmpty" class="empty">No expenses found for this month.</p>
+          </section>
+
+          <section class="card" aria-labelledby="goals-heading">
+            <h2 id="goals-heading">Goals Dashboard</h2>
+            <form id="goalForm" class="input-grid" novalidate>
+              <label class="field">
+                <span>Goal name</span>
+                <input id="goalName" type="text" placeholder="e.g. Emergency Fund" />
+              </label>
+              <label class="field">
+                <span>Target amount ($)</span>
+                <input id="goalTarget" type="number" min="0" step="0.01" placeholder="e.g. 2000" />
+              </label>
+              <label class="field">
+                <span>Current saved ($)</span>
+                <input id="goalCurrent" type="number" min="0" step="0.01" placeholder="e.g. 400" />
+              </label>
+              <button type="submit" class="primary">Add Goal</button>
+            </form>
+            <p id="goalError" class="error" aria-live="polite"></p>
+            <ul id="goalList" class="goal-list"></ul>
+            <p id="goalEmpty" class="empty">No goals added yet.</p>
           </section>
         </section>
       </div>

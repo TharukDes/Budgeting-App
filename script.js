@@ -2,6 +2,7 @@ const STORAGE_KEY = "budget_app_expenses";
 const OTHER_INCOME_STORAGE_KEY = "budget_app_other_incomes";
 const PROFILE_STORAGE_KEY = "budget_app_profile";
 const THEME_STORAGE_KEY = "budget_app_theme";
+const GOALS_STORAGE_KEY = "budget_app_goals";
 const MAX_PAST_MONTHS = 3;
 
 // Inputs and display elements
@@ -27,6 +28,10 @@ const expenseAmountInput = document.getElementById("expenseAmount");
 const categorySuggestions = document.getElementById("categorySuggestions");
 const errorMessage = document.getElementById("errorMessage");
 
+const expenseTemplates = document.getElementById("expenseTemplates");
+const expenseSearchInput = document.getElementById("expenseSearch");
+const expenseCategoryFilter = document.getElementById("expenseCategoryFilter");
+
 const expenseList = document.getElementById("expenseList");
 const emptyState = document.getElementById("emptyState");
 
@@ -43,12 +48,21 @@ const historyTotal = document.getElementById("historyTotal");
 const historyList = document.getElementById("historyList");
 const historyEmpty = document.getElementById("historyEmpty");
 
+const goalForm = document.getElementById("goalForm");
+const goalNameInput = document.getElementById("goalName");
+const goalTargetInput = document.getElementById("goalTarget");
+const goalCurrentInput = document.getElementById("goalCurrent");
+const goalError = document.getElementById("goalError");
+const goalList = document.getElementById("goalList");
+const goalEmpty = document.getElementById("goalEmpty");
+
 const tabButtons = document.querySelectorAll(".tab-btn");
 const pages = document.querySelectorAll(".view");
 const themeToggleButton = document.getElementById("themeToggle");
 
 let expenses = pruneExpenses(loadExpenses());
 let otherIncomes = loadOtherIncomes();
+let goals = loadGoals();
 
 const CHART_COLORS = [
   "#0b7a75",
@@ -123,6 +137,18 @@ function getCurrentMonthExpenses() {
   return expenses.filter((expense) => expense.monthKey === currentMonthKey);
 }
 
+function getFilteredCurrentMonthExpenses() {
+  const allCurrentMonthExpenses = getCurrentMonthExpenses();
+  const query = (expenseSearchInput?.value || "").trim().toLowerCase();
+  const categoryFilter = expenseCategoryFilter?.value || "all";
+
+  return allCurrentMonthExpenses.filter((expense) => {
+    const matchesQuery = !query || expense.name.toLowerCase().includes(query);
+    const matchesCategory = categoryFilter === "all" || expense.category === categoryFilter;
+    return matchesQuery && matchesCategory;
+  });
+}
+
 function getExpensesByMonth(monthKey) {
   return expenses.filter((expense) => expense.monthKey === monthKey);
 }
@@ -167,6 +193,10 @@ function saveExpenses() {
 
 function saveOtherIncomes() {
   localStorage.setItem(OTHER_INCOME_STORAGE_KEY, JSON.stringify(otherIncomes));
+}
+
+function saveGoals() {
+  localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
 }
 
 function saveProfileInputs() {
@@ -245,6 +275,38 @@ function loadExpenses() {
   }
 }
 
+function loadGoals() {
+  const storedData = localStorage.getItem(GOALS_STORAGE_KEY);
+  if (!storedData) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(storedData);
+    return Array.isArray(parsed)
+      ? parsed
+          .filter(
+            (item) =>
+              item &&
+              typeof item.id === "number" &&
+              typeof item.name === "string" &&
+              typeof item.target === "number" &&
+              typeof item.current === "number" &&
+              item.target > 0 &&
+              item.current >= 0
+          )
+          .map((item) => ({
+            id: item.id,
+            name: item.name,
+            target: item.target,
+            current: item.current,
+          }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 function getExpenseCategoryTotals() {
   const totals = {};
 
@@ -275,6 +337,33 @@ function renderCategorySuggestions() {
     option.value = category;
     categorySuggestions.appendChild(option);
   });
+}
+
+function renderCategoryFilterOptions() {
+  if (!expenseCategoryFilter) {
+    return;
+  }
+
+  const currentMonthCategories = [...new Set(getCurrentMonthExpenses().map((expense) => expense.category))]
+    .filter((category) => typeof category === "string" && category.trim())
+    .sort((a, b) => a.localeCompare(b));
+
+  const previousValue = expenseCategoryFilter.value || "all";
+  expenseCategoryFilter.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "All categories";
+  expenseCategoryFilter.appendChild(allOption);
+
+  currentMonthCategories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    expenseCategoryFilter.appendChild(option);
+  });
+
+  expenseCategoryFilter.value = currentMonthCategories.includes(previousValue) ? previousValue : "all";
 }
 
 function loadOtherIncomes() {
@@ -308,18 +397,22 @@ function loadOtherIncomes() {
 }
 
 function renderExpenseList() {
-  const monthExpenses = getCurrentMonthExpenses();
+  const filteredExpenses = getFilteredCurrentMonthExpenses();
   expenseList.innerHTML = "";
 
-  if (monthExpenses.length === 0) {
+  if (filteredExpenses.length === 0) {
     emptyState.style.display = "block";
+    emptyState.textContent = getCurrentMonthExpenses().length === 0
+      ? "No expenses added yet."
+      : "No expenses match your search/filter.";
     renderCategorySuggestions();
+    renderCategoryFilterOptions();
     return;
   }
 
   emptyState.style.display = "none";
 
-  monthExpenses.forEach((expense) => {
+  filteredExpenses.forEach((expense) => {
     const item = document.createElement("li");
     item.className = "expense-item";
 
@@ -357,6 +450,7 @@ function renderExpenseList() {
   });
 
   renderCategorySuggestions();
+  renderCategoryFilterOptions();
 }
 
 function renderOtherIncomeList() {
@@ -408,6 +502,77 @@ function renderOtherIncomeList() {
   });
 }
 
+function renderGoals() {
+  goalList.innerHTML = "";
+
+  if (goals.length === 0) {
+    goalEmpty.style.display = "block";
+    return;
+  }
+
+  goalEmpty.style.display = "none";
+
+  goals.forEach((goal) => {
+    const item = document.createElement("li");
+    item.className = "goal-item";
+
+    const topRow = document.createElement("div");
+    topRow.className = "goal-top";
+
+    const name = document.createElement("span");
+    name.className = "goal-name";
+    name.textContent = goal.name;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-btn";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+      deleteGoal(goal.id);
+    });
+
+    topRow.append(name, deleteButton);
+
+    const progressContainer = document.createElement("div");
+    progressContainer.className = "goal-progress";
+
+    const progressFill = document.createElement("div");
+    progressFill.className = "goal-progress-fill";
+    const percent = Math.min((goal.current / goal.target) * 100, 100);
+    progressFill.style.width = `${percent}%`;
+
+    progressContainer.appendChild(progressFill);
+
+    const meta = document.createElement("p");
+    meta.className = "goal-meta";
+    meta.textContent = `${toCurrency(goal.current)} of ${toCurrency(goal.target)} (${percent.toFixed(0)}%)`;
+
+    const actions = document.createElement("div");
+    actions.className = "goal-actions";
+
+    const addInput = document.createElement("input");
+    addInput.type = "number";
+    addInput.min = "0";
+    addInput.step = "0.01";
+    addInput.placeholder = "Add amount";
+    addInput.className = "goal-add-input";
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "primary";
+    addButton.textContent = "Add";
+    addButton.addEventListener("click", () => {
+      addToGoal(goal.id, addInput.value);
+      addInput.value = "";
+    });
+
+    actions.append(addInput, addButton);
+
+    item.append(topRow, progressContainer, meta, actions);
+    goalList.appendChild(item);
+  });
+}
+
 function updateSummary() {
   saveExpenses();
 
@@ -440,6 +605,14 @@ function showError(message) {
 
 function clearError() {
   errorMessage.textContent = "";
+}
+
+function showGoalError(message) {
+  goalError.textContent = message;
+}
+
+function clearGoalError() {
+  goalError.textContent = "";
 }
 
 function addExpense(event) {
@@ -482,6 +655,17 @@ function addExpense(event) {
   updateSummary();
 }
 
+function handleTemplateClick(event) {
+  const button = event.target.closest(".template-btn");
+  if (!button) {
+    return;
+  }
+
+  expenseNameInput.value = button.dataset.name || "";
+  expenseCategoryInput.value = button.dataset.category || "";
+  expenseAmountInput.focus();
+}
+
 function showOtherIncomeError(message) {
   otherIncomeError.textContent = message;
 }
@@ -520,6 +704,60 @@ function addOtherIncome(event) {
   clearOtherIncomeError();
   renderOtherIncomeList();
   updateSummary();
+}
+
+function addGoal(event) {
+  event.preventDefault();
+
+  const name = goalNameInput.value.trim();
+  const target = parsePositiveNumber(goalTargetInput.value);
+  const current = parsePositiveNumber(goalCurrentInput.value) ?? 0;
+
+  if (!name) {
+    showGoalError("Please enter a goal name.");
+    return;
+  }
+
+  if (target === null || target === 0) {
+    showGoalError("Please enter a valid target amount greater than 0.");
+    return;
+  }
+
+  const goal = {
+    id: Date.now(),
+    name,
+    target,
+    current,
+  };
+
+  goals.push(goal);
+  saveGoals();
+  goalForm.reset();
+  clearGoalError();
+  renderGoals();
+}
+
+function addToGoal(goalId, amountValue) {
+  const addAmount = parsePositiveNumber(amountValue);
+
+  if (addAmount === null || addAmount === 0) {
+    showGoalError("Please enter a valid amount to add to your goal.");
+    return;
+  }
+
+  goals = goals.map((goal) =>
+    goal.id === goalId ? { ...goal, current: goal.current + addAmount } : goal
+  );
+
+  clearGoalError();
+  saveGoals();
+  renderGoals();
+}
+
+function deleteGoal(goalId) {
+  goals = goals.filter((goal) => goal.id !== goalId);
+  saveGoals();
+  renderGoals();
 }
 
 function deleteExpense(id) {
@@ -735,12 +973,25 @@ hoursPerWeekInput.addEventListener("input", handleBudgetInputsChange);
 savingsGoalInput.addEventListener("input", handleBudgetInputsChange);
 expenseForm.addEventListener("submit", addExpense);
 otherIncomeForm.addEventListener("submit", addOtherIncome);
+goalForm.addEventListener("submit", addGoal);
+
+if (expenseSearchInput) {
+  expenseSearchInput.addEventListener("input", renderExpenseList);
+}
+
+if (expenseCategoryFilter) {
+  expenseCategoryFilter.addEventListener("change", renderExpenseList);
+}
+
+if (expenseTemplates) {
+  expenseTemplates.addEventListener("click", handleTemplateClick);
+}
 
 if (historyMonthSelect) {
   historyMonthSelect.addEventListener("change", renderHistoryList);
 }
 
- tabButtons.forEach((button) => {
+tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     setActivePage(button.dataset.tab);
   });
@@ -752,6 +1003,7 @@ if (themeToggleButton) {
 
 renderExpenseList();
 renderOtherIncomeList();
+renderGoals();
 updateSummary();
 setActivePage("income");
 
