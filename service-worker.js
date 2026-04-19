@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-app-v2";
+const CACHE_NAME = "budget-app-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -33,31 +33,27 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const isNavigationRequest = event.request.mode === "navigate";
-
-  if (isNavigationRequest) {
-    // Always try network first for pages so deploys show up quickly.
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match("./index.html"))
-    );
-    return;
-  }
-
+  // Use network-first for all GET requests so new JS/CSS deploys are not stuck in cache.
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    fetch(event.request)
+      .then((networkResponse) => {
+        const cloned = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, cloned);
+        });
+        return networkResponse;
+      })
+      .catch(async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
 
-      return fetch(event.request)
-        .then((networkResponse) => {
-          const cloned = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, cloned);
-          });
-          return networkResponse;
-        })
-        .catch(() => caches.match("./index.html"));
-    })
+        if (event.request.mode === "navigate") {
+          return caches.match("./index.html");
+        }
+
+        return new Response("Offline", { status: 503, statusText: "Offline" });
+      })
   );
 });
