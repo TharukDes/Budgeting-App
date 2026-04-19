@@ -647,6 +647,7 @@ function openEditExpenseModal(expenseId) {
   editExpenseCategoryInput.value = expense.category;
   editExpenseAmountInput.value = String(expense.amount);
   clearEditExpenseError();
+  editExpenseModal.hidden = false;
   editExpenseModal.classList.add("open");
   editExpenseModal.setAttribute("aria-hidden", "false");
 }
@@ -657,6 +658,7 @@ function closeEditExpenseModal() {
   editExpenseForm.reset();
   editExpenseModal.classList.remove("open");
   editExpenseModal.setAttribute("aria-hidden", "true");
+  editExpenseModal.hidden = true;
 }
 
 function saveEditedExpense(event) {

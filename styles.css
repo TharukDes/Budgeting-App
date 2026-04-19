@@ -536,6 +536,10 @@ button.primary:hover {
   z-index: 50;
 }
 
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
 .modal-overlay.open {
   display: flex;
 }
