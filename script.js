@@ -570,10 +570,10 @@ function renderGoals() {
     actions.className = "goal-actions";
 
     const addInput = document.createElement("input");
-    addInput.type = "number";
-    addInput.min = "0";
-    addInput.step = "0.01";
-    addInput.inputMode = "decimal";
+    addInput.type = "text";
+    addInput.setAttribute("inputmode", "decimal");
+    addInput.setAttribute("pattern", "[0-9]*[.,]?[0-9]*");
+    addInput.setAttribute("autocomplete", "off");
     addInput.placeholder = "Add amount";
     addInput.className = "goal-add-input";
 
@@ -829,7 +829,8 @@ function addGoal(event) {
 }
 
 function addToGoal(goalId, amountValue) {
-  const addAmount = parsePositiveNumber(amountValue);
+  const normalized = String(amountValue).trim().replace(",", ".");
+  const addAmount = parsePositiveNumber(normalized);
 
   if (addAmount === null || addAmount === 0) {
     showGoalError("Please enter a valid amount to add to your goal.");
