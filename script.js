@@ -856,9 +856,14 @@ function addToGoal(goalId, amountValue) {
     goal.id === goalId ? { ...goal, current: goal.current + addAmount } : goal
   );
 
+  const updatedBankBalance = getBaseBankBalance() - addAmount;
+  bankBalanceInput.value = String(updatedBankBalance.toFixed(2));
+
   clearGoalError();
   saveGoals();
+  saveProfileInputs();
   renderGoals();
+  updateSummary();
 }
 
 function deleteGoal(goalId) {
