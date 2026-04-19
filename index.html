@@ -16,7 +16,12 @@
   <body>
     <main class="app">
       <header class="app-header">
-        <h1>Personal Budget App</h1>
+        <div class="header-top">
+          <h1>Personal Budget App</h1>
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Enable dark mode">
+            Dark mode
+          </button>
+        </div>
         <p class="subtitle">Track your income, expenses, and what is left to spend.</p>
       </header>
 
@@ -40,10 +45,43 @@
                 <strong id="weeklyIncome">$0.00</strong>
               </p>
               <p class="metric">
-                <span>Monthly income</span>
+                <span>Job monthly income</span>
                 <strong id="monthlyIncome">$0.00</strong>
               </p>
+              <p class="metric">
+                <span>Other income total</span>
+                <strong id="otherIncomeTotal">$0.00</strong>
+              </p>
+              <p class="metric">
+                <span>Total monthly income</span>
+                <strong id="totalMonthlyIncome">$0.00</strong>
+              </p>
             </div>
+          </section>
+
+          <section class="card">
+            <h2>Other Income</h2>
+            <form id="otherIncomeForm" class="input-grid" novalidate>
+              <label class="field">
+                <span>Income source</span>
+                <input id="otherIncomeName" type="text" placeholder="e.g. Reimbursement or Gift" />
+              </label>
+              <label class="field">
+                <span>Type</span>
+                <select id="otherIncomeFrequency">
+                  <option value="one-time">One-time</option>
+                  <option value="recurring">Monthly recurring</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Amount ($)</span>
+                <input id="otherIncomeAmount" type="number" min="0" step="0.01" placeholder="e.g. 50" />
+              </label>
+              <button type="submit" class="primary">Add Income</button>
+            </form>
+            <p id="otherIncomeError" class="error" aria-live="polite"></p>
+            <ul id="otherIncomeList" class="expense-list"></ul>
+            <p id="otherIncomeEmpty" class="empty">No other income added yet.</p>
           </section>
         </section>
 
@@ -56,11 +94,21 @@
                 <input id="expenseName" type="text" placeholder="e.g. Rent" />
               </label>
               <label class="field">
+                <span>Category</span>
+                <input
+                  id="expenseCategory"
+                  type="text"
+                  list="categorySuggestions"
+                  placeholder="e.g. Housing, Food, Transport"
+                />
+              </label>
+              <label class="field">
                 <span>Amount ($)</span>
                 <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="e.g. 1200" />
               </label>
               <button type="submit" class="primary">Add Expense</button>
             </form>
+            <datalist id="categorySuggestions"></datalist>
             <p id="errorMessage" class="error" aria-live="polite"></p>
           </section>
 
@@ -83,6 +131,26 @@
               <p class="summary-row"><span>Remaining money</span><strong id="remainingMoney">$0.00</strong></p>
               <p class="summary-row"><span>Safe to spend (after savings)</span><strong id="safeToSpend">$0.00</strong></p>
             </div>
+          </section>
+
+          <section class="card" aria-labelledby="chart-heading">
+            <h2 id="chart-heading">Spending by Category</h2>
+            <div class="chart-wrap">
+              <canvas id="expenseChart" width="240" height="240" aria-label="Expense category pie chart"></canvas>
+              <p id="chartEmpty" class="empty">Add categorized expenses to see your chart.</p>
+              <ul id="chartLegend" class="chart-legend"></ul>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="history-heading">
+            <h2 id="history-heading">Recent Monthly History</h2>
+            <label class="field">
+              <span>Choose month</span>
+              <select id="historyMonthSelect"></select>
+            </label>
+            <p class="summary-row"><span>Selected month total</span><strong id="historyTotal">$0.00</strong></p>
+            <ul id="historyList" class="expense-list"></ul>
+            <p id="historyEmpty" class="empty">No expenses found for this month.</p>
           </section>
         </section>
       </div>
