@@ -573,6 +573,7 @@ function renderGoals() {
     addInput.type = "number";
     addInput.min = "0";
     addInput.step = "0.01";
+    addInput.inputMode = "decimal";
     addInput.placeholder = "Add amount";
     addInput.className = "goal-add-input";
 
