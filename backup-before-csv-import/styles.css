@@ -353,19 +353,6 @@ button.primary:hover {
   color: var(--subtitle);
 }
 
-.status-message {
-  margin: 10px 0 0;
-  font-size: 0.92rem;
-}
-
-.status-success {
-  color: #10b981;
-}
-
-.status-error {
-  color: var(--danger);
-}
-
 .summary-grid {
   margin-top: 12px;
   display: grid;
