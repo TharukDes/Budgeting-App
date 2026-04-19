@@ -1,7 +1,6 @@
 const STORAGE_KEY = "budget_app_expenses";
 const OTHER_INCOME_STORAGE_KEY = "budget_app_other_incomes";
 const PROFILE_STORAGE_KEY = "budget_app_profile";
-const THEME_STORAGE_KEY = "budget_app_theme";
 const GOALS_STORAGE_KEY = "budget_app_goals";
 const MAX_PAST_MONTHS = 3;
 
@@ -66,7 +65,6 @@ const cancelEditExpenseButton = document.getElementById("cancelEditExpense");
 
 const tabButtons = document.querySelectorAll(".tab-btn");
 const pages = document.querySelectorAll(".view");
-const themeToggleButton = document.getElementById("themeToggle");
 
 let expenses = pruneExpenses(loadExpenses());
 let otherIncomes = loadOtherIncomes();
@@ -85,7 +83,7 @@ const CHART_COLORS = [
 ];
 
 loadProfileInputs();
-initializeTheme();
+applyDarkTheme();
 saveExpenses();
 
 function toCurrency(value) {
@@ -1021,40 +1019,12 @@ function setActivePage(pageName) {
   });
 }
 
-function initializeTheme() {
-  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const initialTheme = savedTheme === "dark" || savedTheme === "light"
-    ? savedTheme
-    : prefersDark
-      ? "dark"
-      : "light";
-
-  applyTheme(initialTheme);
-}
-
-function applyTheme(theme) {
-  const isDark = theme === "dark";
-  document.body.dataset.theme = isDark ? "dark" : "light";
-
-  if (themeToggleButton) {
-    themeToggleButton.textContent = isDark ? "Light mode" : "Dark mode";
-    themeToggleButton.setAttribute(
-      "aria-label",
-      isDark ? "Enable light mode" : "Enable dark mode"
-    );
-  }
-
+function applyDarkTheme() {
+  document.body.dataset.theme = "dark";
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) {
-    themeMeta.setAttribute("content", isDark ? "#0f172a" : "#0b7a75");
+    themeMeta.setAttribute("content", "#0f172a");
   }
-}
-
-function toggleTheme() {
-  const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
-  applyTheme(nextTheme);
-  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
 }
 
 // Recalculate totals as the income and savings inputs change.
@@ -1087,10 +1057,6 @@ tabButtons.forEach((button) => {
     setActivePage(button.dataset.tab);
   });
 });
-
-if (themeToggleButton) {
-  themeToggleButton.addEventListener("click", toggleTheme);
-}
 
 if (cancelEditExpenseButton) {
   cancelEditExpenseButton.addEventListener("click", closeEditExpenseModal);

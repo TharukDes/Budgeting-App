@@ -78,7 +78,7 @@ body {
 
 .header-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   align-items: center;
 }
@@ -513,16 +513,6 @@ button.primary:hover {
   background: linear-gradient(135deg, #0b7a75 0%, #10908a 100%);
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(11, 122, 117, 0.28);
-}
-
-.theme-toggle {
-  border-radius: 999px;
-  background: var(--surface-strong);
-  color: var(--text);
-  border: 1px solid var(--line);
-  font-size: 0.86rem;
-  padding: 8px 12px;
-  white-space: nowrap;
 }
 
 .modal-overlay {
