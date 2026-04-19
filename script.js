@@ -570,10 +570,10 @@ function renderGoals() {
     actions.className = "goal-actions";
 
     const addInput = document.createElement("input");
-    addInput.type = "text";
+    addInput.type = "number";
+    addInput.min = "0";
+    addInput.step = "0.01";
     addInput.setAttribute("inputmode", "decimal");
-    addInput.setAttribute("pattern", "[0-9]*[.,]?[0-9]*");
-    addInput.setAttribute("autocomplete", "off");
     addInput.placeholder = "Add amount";
     addInput.className = "goal-add-input";
 
