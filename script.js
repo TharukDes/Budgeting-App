@@ -56,6 +56,14 @@ const goalError = document.getElementById("goalError");
 const goalList = document.getElementById("goalList");
 const goalEmpty = document.getElementById("goalEmpty");
 
+const editExpenseModal = document.getElementById("editExpenseModal");
+const editExpenseForm = document.getElementById("editExpenseForm");
+const editExpenseNameInput = document.getElementById("editExpenseName");
+const editExpenseCategoryInput = document.getElementById("editExpenseCategory");
+const editExpenseAmountInput = document.getElementById("editExpenseAmount");
+const editExpenseError = document.getElementById("editExpenseError");
+const cancelEditExpenseButton = document.getElementById("cancelEditExpense");
+
 const tabButtons = document.querySelectorAll(".tab-btn");
 const pages = document.querySelectorAll(".view");
 const themeToggleButton = document.getElementById("themeToggle");
@@ -63,6 +71,7 @@ const themeToggleButton = document.getElementById("themeToggle");
 let expenses = pruneExpenses(loadExpenses());
 let otherIncomes = loadOtherIncomes();
 let goals = loadGoals();
+let editingExpenseId = null;
 
 const CHART_COLORS = [
   "#0b7a75",
@@ -437,6 +446,17 @@ function renderExpenseList() {
     textWrap.append(name, category);
     info.append(textWrap, amount);
 
+    const actions = document.createElement("div");
+    actions.className = "expense-actions";
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "edit-btn";
+    editButton.textContent = "Edit";
+    editButton.addEventListener("click", () => {
+      openEditExpenseModal(expense.id);
+    });
+
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "delete-btn";
@@ -445,7 +465,8 @@ function renderExpenseList() {
       deleteExpense(expense.id);
     });
 
-    item.append(info, deleteButton);
+    actions.append(editButton, deleteButton);
+    item.append(info, actions);
     expenseList.appendChild(item);
   });
 
@@ -605,6 +626,75 @@ function showError(message) {
 
 function clearError() {
   errorMessage.textContent = "";
+}
+
+function showEditExpenseError(message) {
+  editExpenseError.textContent = message;
+}
+
+function clearEditExpenseError() {
+  editExpenseError.textContent = "";
+}
+
+function openEditExpenseModal(expenseId) {
+  const expense = expenses.find((item) => item.id === expenseId);
+  if (!expense) {
+    return;
+  }
+
+  editingExpenseId = expenseId;
+  editExpenseNameInput.value = expense.name;
+  editExpenseCategoryInput.value = expense.category;
+  editExpenseAmountInput.value = String(expense.amount);
+  clearEditExpenseError();
+  editExpenseModal.classList.add("open");
+  editExpenseModal.setAttribute("aria-hidden", "false");
+}
+
+function closeEditExpenseModal() {
+  editingExpenseId = null;
+  clearEditExpenseError();
+  editExpenseForm.reset();
+  editExpenseModal.classList.remove("open");
+  editExpenseModal.setAttribute("aria-hidden", "true");
+}
+
+function saveEditedExpense(event) {
+  event.preventDefault();
+
+  if (editingExpenseId === null) {
+    return;
+  }
+
+  const name = editExpenseNameInput.value.trim();
+  const category = editExpenseCategoryInput.value.trim();
+  const amount = parsePositiveNumber(editExpenseAmountInput.value);
+
+  if (!name) {
+    showEditExpenseError("Please enter an expense name.");
+    return;
+  }
+
+  if (!category) {
+    showEditExpenseError("Please enter an expense category.");
+    return;
+  }
+
+  if (amount === null || amount === 0) {
+    showEditExpenseError("Please enter a valid expense amount greater than 0.");
+    return;
+  }
+
+  expenses = expenses.map((expense) =>
+    expense.id === editingExpenseId
+      ? { ...expense, name, category, amount }
+      : expense
+  );
+
+  saveExpenses();
+  renderExpenseList();
+  updateSummary();
+  closeEditExpenseModal();
 }
 
 function showGoalError(message) {
@@ -974,6 +1064,7 @@ savingsGoalInput.addEventListener("input", handleBudgetInputsChange);
 expenseForm.addEventListener("submit", addExpense);
 otherIncomeForm.addEventListener("submit", addOtherIncome);
 goalForm.addEventListener("submit", addGoal);
+editExpenseForm.addEventListener("submit", saveEditedExpense);
 
 if (expenseSearchInput) {
   expenseSearchInput.addEventListener("input", renderExpenseList);
@@ -1000,6 +1091,24 @@ tabButtons.forEach((button) => {
 if (themeToggleButton) {
   themeToggleButton.addEventListener("click", toggleTheme);
 }
+
+if (cancelEditExpenseButton) {
+  cancelEditExpenseButton.addEventListener("click", closeEditExpenseModal);
+}
+
+if (editExpenseModal) {
+  editExpenseModal.addEventListener("click", (event) => {
+    if (event.target === editExpenseModal) {
+      closeEditExpenseModal();
+    }
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && editExpenseModal.classList.contains("open")) {
+    closeEditExpenseModal();
+  }
+});
 
 renderExpenseList();
 renderOtherIncomeList();

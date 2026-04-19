@@ -318,6 +318,17 @@ button.primary:hover {
   background: #fecdd3;
 }
 
+.edit-btn {
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.expense-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
 .empty {
   margin: 10px 0 0;
   color: var(--subtitle);
@@ -512,6 +523,40 @@ button.primary:hover {
   font-size: 0.86rem;
   padding: 8px 12px;
   white-space: nowrap;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  z-index: 50;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-card {
+  width: min(520px, 100%);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.modal-card h2 {
+  margin: 0 0 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 @media (max-width: 640px) {
