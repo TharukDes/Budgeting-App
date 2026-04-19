@@ -949,8 +949,6 @@ function renderHistoryMonthOptions() {
 
   if (previousValue && monthKeys.includes(previousValue)) {
     historyMonthSelect.value = previousValue;
-  } else if (monthKeys[1]) {
-    historyMonthSelect.value = monthKeys[1];
   } else {
     historyMonthSelect.value = monthKeys[0];
   }
