@@ -35,6 +35,8 @@ const expenseList = document.getElementById("expenseList");
 const emptyState = document.getElementById("emptyState");
 
 const savingsGoalInput = document.getElementById("savingsGoal");
+const bankBalanceInput = document.getElementById("bankBalance");
+const estimatedBalanceDisplay = document.getElementById("estimatedBalance");
 const totalSpentDisplay = document.getElementById("totalSpent");
 const remainingMoneyDisplay = document.getElementById("remainingMoney");
 const safeToSpendDisplay = document.getElementById("safeToSpend");
@@ -189,6 +191,11 @@ function getSavingsGoal() {
   return goal === null ? 0 : goal;
 }
 
+function getBaseBankBalance() {
+  const balance = parsePositiveNumber(bankBalanceInput.value);
+  return balance === null ? 0 : balance;
+}
+
 function getTotalExpenses() {
   return getCurrentMonthExpenses().reduce((total, expense) => total + expense.amount, 0);
 }
@@ -210,6 +217,7 @@ function saveProfileInputs() {
   const profile = {
     hourlyWage: hourlyWageInput.value,
     hoursPerWeek: hoursPerWeekInput.value,
+    bankBalance: bankBalanceInput.value,
     savingsGoal: savingsGoalInput.value,
   };
 
@@ -234,6 +242,10 @@ function loadProfileInputs() {
 
     if (typeof profile.hoursPerWeek === "string") {
       hoursPerWeekInput.value = profile.hoursPerWeek;
+    }
+
+    if (typeof profile.bankBalance === "string") {
+      bankBalanceInput.value = profile.bankBalance;
     }
 
     if (typeof profile.savingsGoal === "string") {
@@ -603,15 +615,18 @@ function updateSummary() {
   const totalSpent = getTotalExpenses();
   const remainingMoney = totalMonthlyIncome - totalSpent;
   const safeToSpend = remainingMoney - getSavingsGoal();
+  const estimatedBalance = getBaseBankBalance() + remainingMoney;
 
   weeklyIncomeDisplay.textContent = toCurrency(weeklyIncome);
   monthlyIncomeDisplay.textContent = toCurrency(monthlyIncome);
   otherIncomeTotalDisplay.textContent = toCurrency(otherIncomeTotal);
   totalMonthlyIncomeDisplay.textContent = toCurrency(totalMonthlyIncome);
+  estimatedBalanceDisplay.textContent = toCurrency(estimatedBalance);
   totalSpentDisplay.textContent = toCurrency(totalSpent);
   remainingMoneyDisplay.textContent = toCurrency(remainingMoney);
   safeToSpendDisplay.textContent = toCurrency(safeToSpend);
 
+  estimatedBalanceDisplay.style.color = estimatedBalance < 0 ? "var(--danger)" : "var(--text)";
   remainingMoneyDisplay.style.color = remainingMoney < 0 ? "var(--danger)" : "var(--text)";
   safeToSpendDisplay.style.color = safeToSpend < 0 ? "var(--danger)" : "var(--text)";
 
@@ -1033,6 +1048,7 @@ function applyDarkTheme() {
 hourlyWageInput.addEventListener("input", handleBudgetInputsChange);
 hoursPerWeekInput.addEventListener("input", handleBudgetInputsChange);
 savingsGoalInput.addEventListener("input", handleBudgetInputsChange);
+bankBalanceInput.addEventListener("input", handleBudgetInputsChange);
 expenseForm.addEventListener("submit", addExpense);
 otherIncomeForm.addEventListener("submit", addOtherIncome);
 goalForm.addEventListener("submit", addGoal);
