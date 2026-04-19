@@ -814,6 +814,7 @@ function addOtherIncome(event) {
 
 function addGoal(event) {
   event.preventDefault();
+  const bankBalanceBeforeValue = bankBalanceInput.value;
 
   const name = goalNameInput.value.trim();
   const target = parsePositiveNumber(goalTargetInput.value);
@@ -839,8 +840,12 @@ function addGoal(event) {
   goals.push(goal);
   saveGoals();
   goalForm.reset();
+  // Creating a goal should not change account balance.
+  bankBalanceInput.value = bankBalanceBeforeValue;
   clearGoalError();
+  saveProfileInputs();
   renderGoals();
+  updateSummary();
 }
 
 function addToGoal(goalId, amountValue) {
