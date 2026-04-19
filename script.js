@@ -1,4 +1,5 @@
 const STORAGE_KEY = "budget_app_expenses";
+const PROFILE_STORAGE_KEY = "budget_app_profile";
 
 // Inputs and display elements
 const hourlyWageInput = document.getElementById("hourlyWage");
@@ -22,6 +23,8 @@ const tabButtons = document.querySelectorAll(".tab-btn");
 const pages = document.querySelectorAll(".view");
 
 let expenses = loadExpenses();
+
+loadProfileInputs();
 
 function toCurrency(value) {
   return `$${value.toFixed(2)}`;
@@ -59,6 +62,44 @@ function getTotalExpenses() {
 
 function saveExpenses() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+}
+
+function saveProfileInputs() {
+  const profile = {
+    hourlyWage: hourlyWageInput.value,
+    hoursPerWeek: hoursPerWeekInput.value,
+    savingsGoal: savingsGoalInput.value,
+  };
+
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+function loadProfileInputs() {
+  const storedData = localStorage.getItem(PROFILE_STORAGE_KEY);
+  if (!storedData) {
+    return;
+  }
+
+  try {
+    const profile = JSON.parse(storedData);
+    if (!profile || typeof profile !== "object") {
+      return;
+    }
+
+    if (typeof profile.hourlyWage === "string") {
+      hourlyWageInput.value = profile.hourlyWage;
+    }
+
+    if (typeof profile.hoursPerWeek === "string") {
+      hoursPerWeekInput.value = profile.hoursPerWeek;
+    }
+
+    if (typeof profile.savingsGoal === "string") {
+      savingsGoalInput.value = profile.savingsGoal;
+    }
+  } catch {
+    // Ignore invalid saved profile data.
+  }
 }
 
 function loadExpenses() {
@@ -189,6 +230,11 @@ function deleteExpense(id) {
   updateSummary();
 }
 
+function handleBudgetInputsChange() {
+  saveProfileInputs();
+  updateSummary();
+}
+
 function setActivePage(pageName) {
   pages.forEach((page) => {
     const isActive = page.dataset.page === pageName;
@@ -207,9 +253,9 @@ function setActivePage(pageName) {
 }
 
 // Recalculate totals as the income and savings inputs change.
-hourlyWageInput.addEventListener("input", updateSummary);
-hoursPerWeekInput.addEventListener("input", updateSummary);
-savingsGoalInput.addEventListener("input", updateSummary);
+hourlyWageInput.addEventListener("input", handleBudgetInputsChange);
+hoursPerWeekInput.addEventListener("input", handleBudgetInputsChange);
+savingsGoalInput.addEventListener("input", handleBudgetInputsChange);
 expenseForm.addEventListener("submit", addExpense);
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
