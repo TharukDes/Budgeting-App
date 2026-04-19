@@ -191,6 +191,157 @@ function findHeaderIndex(headers, candidates) {
   return headers.findIndex((header) => candidates.includes(header));
 }
 
+function getColumnIndexes(headers) {
+  const descriptionIndex = findHeaderIndex(headers, [
+    "description",
+    "name",
+    "memo",
+    "details",
+    "merchant",
+    "payee",
+    "transaction description",
+    "narrative",
+  ]);
+  const amountIndex = findHeaderIndex(headers, [
+    "amount",
+    "transaction amount",
+    "total amount",
+    "value",
+    "withdrawal amount",
+  ]);
+  const debitIndex = findHeaderIndex(headers, [
+    "debit",
+    "debits",
+    "withdrawal",
+    "debit amount",
+  ]);
+  const categoryIndex = findHeaderIndex(headers, [
+    "category",
+    "expense category",
+  ]);
+  const dateIndex = findHeaderIndex(headers, [
+    "date",
+    "transaction date",
+    "posted date",
+    "posting date",
+    "post date",
+  ]);
+  const typeIndex = findHeaderIndex(headers, [
+    "type",
+    "transaction type",
+    "credit/debit",
+    "debit/credit",
+  ]);
+
+  return {
+    descriptionIndex,
+    amountIndex,
+    debitIndex,
+    categoryIndex,
+    dateIndex,
+    typeIndex,
+  };
+}
+
+function findHeaderRow(rows) {
+  const maxRowsToScan = Math.min(rows.length, 30);
+
+  for (let index = 0; index < maxRowsToScan; index += 1) {
+    const headers = rows[index].map((header) => normalizeHeaderValue(header));
+    const columnIndexes = getColumnIndexes(headers);
+
+    if (
+      columnIndexes.descriptionIndex !== -1 &&
+      (columnIndexes.amountIndex !== -1 || columnIndexes.debitIndex !== -1)
+    ) {
+      return { headerRowIndex: index, ...columnIndexes };
+    }
+  }
+
+  return null;
+}
+
+function looksLikeDateCell(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return false;
+  }
+
+  if (/^\d{1,2}[/-]\d{1,2}[/-]\d{2,4}$/.test(raw)) {
+    return true;
+  }
+
+  const parsed = new Date(raw);
+  return !Number.isNaN(parsed.getTime());
+}
+
+function inferColumnsWithoutHeader(rows) {
+  const sampleRows = rows.slice(0, 50).filter((row) => row.some((cell) => String(cell).trim() !== ""));
+  if (sampleRows.length === 0) {
+    return null;
+  }
+
+  let maxColumns = 0;
+  sampleRows.forEach((row) => {
+    maxColumns = Math.max(maxColumns, row.length);
+  });
+
+  const amountScores = new Array(maxColumns).fill(0);
+  const textScores = new Array(maxColumns).fill(0);
+  const dateScores = new Array(maxColumns).fill(0);
+
+  sampleRows.forEach((row) => {
+    for (let index = 0; index < maxColumns; index += 1) {
+      const rawCell = String(row[index] || "").trim();
+      if (!rawCell) {
+        continue;
+      }
+
+      if (parseAmountFromCell(rawCell) !== null) {
+        amountScores[index] += 1;
+      }
+
+      if (looksLikeDateCell(rawCell)) {
+        dateScores[index] += 1;
+      }
+
+      if (/[A-Za-z]/.test(rawCell)) {
+        textScores[index] += 1;
+      }
+    }
+  });
+
+  const amountIndex = amountScores.indexOf(Math.max(...amountScores));
+  const dateIndex = dateScores.indexOf(Math.max(...dateScores));
+
+  let descriptionIndex = -1;
+  let bestDescriptionScore = -1;
+  for (let index = 0; index < textScores.length; index += 1) {
+    if (index === amountIndex) {
+      continue;
+    }
+
+    if (textScores[index] > bestDescriptionScore) {
+      bestDescriptionScore = textScores[index];
+      descriptionIndex = index;
+    }
+  }
+
+  if (descriptionIndex === -1 || amountScores[amountIndex] === 0) {
+    return null;
+  }
+
+  return {
+    headerRowIndex: -1,
+    descriptionIndex,
+    amountIndex,
+    debitIndex: -1,
+    categoryIndex: -1,
+    dateIndex: dateScores[dateIndex] > 0 ? dateIndex : -1,
+    typeIndex: -1,
+  };
+}
+
 function parseAmountFromCell(rawValue) {
   const cleaned = String(rawValue || "")
     .replace(/\$/g, "")
@@ -273,46 +424,26 @@ function handleCsvImport() {
         return;
       }
 
-      const headers = rows[0].map((header) => normalizeHeaderValue(header));
-      const descriptionIndex = findHeaderIndex(headers, [
-        "description",
-        "name",
-        "memo",
-        "details",
-        "merchant",
-        "transaction description",
-      ]);
-      const amountIndex = findHeaderIndex(headers, [
-        "amount",
-        "transaction amount",
-        "total amount",
-      ]);
-      const debitIndex = findHeaderIndex(headers, [
-        "debit",
-        "debits",
-        "withdrawal",
-      ]);
-      const categoryIndex = findHeaderIndex(headers, [
-        "category",
-        "expense category",
-      ]);
-      const dateIndex = findHeaderIndex(headers, [
-        "date",
-        "transaction date",
-        "posted date",
-      ]);
-      const typeIndex = findHeaderIndex(headers, [
-        "type",
-        "transaction type",
-      ]);
+      const headerResult = findHeaderRow(rows);
+      const inferredResult = headerResult || inferColumnsWithoutHeader(rows);
 
-      if (descriptionIndex === -1 || (amountIndex === -1 && debitIndex === -1)) {
+      if (!inferredResult) {
         showCsvImportStatus(
-          "CSV needs description and amount columns (or debit column).",
+          "Could not find transaction columns. Try a different export format from your bank.",
           "error"
         );
         return;
       }
+
+      const {
+        headerRowIndex,
+        descriptionIndex,
+        amountIndex,
+        debitIndex,
+        categoryIndex,
+        dateIndex,
+        typeIndex,
+      } = inferredResult;
 
       const newExpenses = [];
       const columnMap = {
@@ -321,7 +452,9 @@ function handleCsvImport() {
         typeIndex,
       };
 
-      for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
+      const dataStartIndex = headerRowIndex >= 0 ? headerRowIndex + 1 : 0;
+
+      for (let rowIndex = dataStartIndex; rowIndex < rows.length; rowIndex += 1) {
         const cells = rows[rowIndex];
         const name = String(cells[descriptionIndex] || "").trim();
         if (!name) {
