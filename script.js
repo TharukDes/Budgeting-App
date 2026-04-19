@@ -223,8 +223,11 @@ setActivePage("income");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
-      console.error("Service worker registration failed:", error);
-    });
+    navigator.serviceWorker
+      .register("./service-worker.js")
+      .then((registration) => registration.update())
+      .catch((error) => {
+        console.error("Service worker registration failed:", error);
+      });
   });
 }
