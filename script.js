@@ -1023,7 +1023,7 @@ function applyDarkTheme() {
   document.body.dataset.theme = "dark";
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) {
-    themeMeta.setAttribute("content", "#0f172a");
+    themeMeta.setAttribute("content", "#000000");
   }
 }
 
