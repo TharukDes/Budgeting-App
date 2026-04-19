@@ -20,65 +20,79 @@
         <p class="subtitle">Track your income, expenses, and what is left to spend.</p>
       </header>
 
-      <section class="card" aria-labelledby="income-heading">
-        <h2 id="income-heading">Income</h2>
-        <div class="input-grid">
-          <label class="field">
-            <span>Hourly wage ($)</span>
-            <input id="hourlyWage" type="number" min="0" step="0.01" placeholder="e.g. 20" />
-          </label>
-          <label class="field">
-            <span>Hours per week</span>
-            <input id="hoursPerWeek" type="number" min="0" step="0.1" placeholder="e.g. 40" />
-          </label>
-        </div>
-        <div class="income-metrics">
-          <p class="metric">
-            <span>Weekly income</span>
-            <strong id="weeklyIncome">$0.00</strong>
-          </p>
-          <p class="metric">
-            <span>Monthly income</span>
-            <strong id="monthlyIncome">$0.00</strong>
-          </p>
-        </div>
-      </section>
+      <div class="view-stack">
+        <section class="view is-active" data-page="income" aria-labelledby="income-heading">
+          <section class="card">
+            <h2 id="income-heading">Income</h2>
+            <div class="input-grid">
+              <label class="field">
+                <span>Hourly wage ($)</span>
+                <input id="hourlyWage" type="number" min="0" step="0.01" placeholder="e.g. 20" />
+              </label>
+              <label class="field">
+                <span>Hours per week</span>
+                <input id="hoursPerWeek" type="number" min="0" step="0.1" placeholder="e.g. 40" />
+              </label>
+            </div>
+            <div class="income-metrics">
+              <p class="metric">
+                <span>Weekly income</span>
+                <strong id="weeklyIncome">$0.00</strong>
+              </p>
+              <p class="metric">
+                <span>Monthly income</span>
+                <strong id="monthlyIncome">$0.00</strong>
+              </p>
+            </div>
+          </section>
+        </section>
 
-      <section class="card" aria-labelledby="expense-heading">
-        <h2 id="expense-heading">Add Expense</h2>
-        <form id="expenseForm" class="input-grid" novalidate>
-          <label class="field">
-            <span>Expense name</span>
-            <input id="expenseName" type="text" placeholder="e.g. Rent" />
-          </label>
-          <label class="field">
-            <span>Amount ($)</span>
-            <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="e.g. 1200" />
-          </label>
-          <button type="submit" class="primary">Add Expense</button>
-        </form>
-        <p id="errorMessage" class="error" aria-live="polite"></p>
-      </section>
+        <section class="view" data-page="expenses" aria-labelledby="expense-heading">
+          <section class="card">
+            <h2 id="expense-heading">Add Expense</h2>
+            <form id="expenseForm" class="input-grid" novalidate>
+              <label class="field">
+                <span>Expense name</span>
+                <input id="expenseName" type="text" placeholder="e.g. Rent" />
+              </label>
+              <label class="field">
+                <span>Amount ($)</span>
+                <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="e.g. 1200" />
+              </label>
+              <button type="submit" class="primary">Add Expense</button>
+            </form>
+            <p id="errorMessage" class="error" aria-live="polite"></p>
+          </section>
 
-      <section class="card" aria-labelledby="list-heading">
-        <h2 id="list-heading">Expense List</h2>
-        <ul id="expenseList" class="expense-list"></ul>
-        <p id="emptyState" class="empty">No expenses added yet.</p>
-      </section>
+          <section class="card" aria-labelledby="list-heading">
+            <h2 id="list-heading">Expense List</h2>
+            <ul id="expenseList" class="expense-list"></ul>
+            <p id="emptyState" class="empty">No expenses added yet.</p>
+          </section>
+        </section>
 
-      <section class="card" aria-labelledby="summary-heading">
-        <h2 id="summary-heading">Summary</h2>
-        <label class="field">
-          <span>Savings goal ($) <small>(optional)</small></span>
-          <input id="savingsGoal" type="number" min="0" step="0.01" placeholder="e.g. 300" />
-        </label>
-        <div class="summary-grid">
-          <p class="summary-row"><span>Total spent</span><strong id="totalSpent">$0.00</strong></p>
-          <p class="summary-row"><span>Remaining money</span><strong id="remainingMoney">$0.00</strong></p>
-          <p class="summary-row"><span>Safe to spend (after savings)</span><strong id="safeToSpend">$0.00</strong></p>
-        </div>
-      </section>
+        <section class="view" data-page="summary" aria-labelledby="summary-heading">
+          <section class="card">
+            <h2 id="summary-heading">Summary</h2>
+            <label class="field">
+              <span>Savings goal ($) <small>(optional)</small></span>
+              <input id="savingsGoal" type="number" min="0" step="0.01" placeholder="e.g. 300" />
+            </label>
+            <div class="summary-grid">
+              <p class="summary-row"><span>Total spent</span><strong id="totalSpent">$0.00</strong></p>
+              <p class="summary-row"><span>Remaining money</span><strong id="remainingMoney">$0.00</strong></p>
+              <p class="summary-row"><span>Safe to spend (after savings)</span><strong id="safeToSpend">$0.00</strong></p>
+            </div>
+          </section>
+        </section>
+      </div>
     </main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="tab-btn is-active" type="button" data-tab="income" aria-current="page">Income</button>
+      <button class="tab-btn" type="button" data-tab="expenses">Expenses</button>
+      <button class="tab-btn" type="button" data-tab="summary">Summary</button>
+    </nav>
 
     <script src="script.js"></script>
   </body>

@@ -18,6 +18,8 @@ const savingsGoalInput = document.getElementById("savingsGoal");
 const totalSpentDisplay = document.getElementById("totalSpent");
 const remainingMoneyDisplay = document.getElementById("remainingMoney");
 const safeToSpendDisplay = document.getElementById("safeToSpend");
+const tabButtons = document.querySelectorAll(".tab-btn");
+const pages = document.querySelectorAll(".view");
 
 let expenses = loadExpenses();
 
@@ -187,14 +189,37 @@ function deleteExpense(id) {
   updateSummary();
 }
 
+function setActivePage(pageName) {
+  pages.forEach((page) => {
+    const isActive = page.dataset.page === pageName;
+    page.classList.toggle("is-active", isActive);
+  });
+
+  tabButtons.forEach((button) => {
+    const isActive = button.dataset.tab === pageName;
+    button.classList.toggle("is-active", isActive);
+    if (isActive) {
+      button.setAttribute("aria-current", "page");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  });
+}
+
 // Recalculate totals as the income and savings inputs change.
 hourlyWageInput.addEventListener("input", updateSummary);
 hoursPerWeekInput.addEventListener("input", updateSummary);
 savingsGoalInput.addEventListener("input", updateSummary);
 expenseForm.addEventListener("submit", addExpense);
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActivePage(button.dataset.tab);
+  });
+});
 
 renderExpenseList();
 updateSummary();
+setActivePage("income");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

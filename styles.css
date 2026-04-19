@@ -1,14 +1,14 @@
 :root {
   --text: #0f172a;
   --muted: #475569;
-  --card-bg: rgba(255, 255, 255, 0.78);
-  --card-border: rgba(255, 255, 255, 0.55);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-border: rgba(255, 255, 255, 0.62);
   --line: #e2e8f0;
   --primary: #0b7a75;
   --primary-hover: #085f5b;
   --danger: #be123c;
   --danger-soft: #ffe4e6;
-  --shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+  --shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
 }
 
 * {
@@ -18,12 +18,12 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding: 28px;
+  padding: 26px;
   color: var(--text);
   font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(circle at 10% 5%, #c7f9e5 0%, transparent 28%),
-    radial-gradient(circle at 90% 0%, #cfe8ff 0%, transparent 24%),
+    radial-gradient(circle at 8% 4%, #c7f9e5 0%, transparent 30%),
+    radial-gradient(circle at 90% 0%, #cfe8ff 0%, transparent 28%),
     linear-gradient(145deg, #f4f7ff 0%, #eef7f5 52%, #f9fafc 100%);
   display: grid;
   place-items: center;
@@ -31,8 +31,7 @@ body {
 
 .app {
   width: min(820px, 100%);
-  display: grid;
-  gap: 18px;
+  padding-bottom: 92px;
 }
 
 .app-header {
@@ -42,15 +41,40 @@ body {
 
 h1 {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
   letter-spacing: -0.02em;
 }
 
 .subtitle {
-  margin: 10px auto 0;
+  margin: 10px auto 16px;
   max-width: 50ch;
   color: var(--muted);
   font-size: 1rem;
+}
+
+.view-stack {
+  position: relative;
+}
+
+.view {
+  display: none;
+  gap: 14px;
+}
+
+.view.is-active {
+  display: grid;
+  animation: fade-slide-in 0.25s ease;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card {
@@ -92,7 +116,7 @@ input {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 11px 12px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   font-size: 1rem;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
@@ -240,9 +264,47 @@ button.primary:hover {
   font-size: 1.02rem;
 }
 
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(500px, calc(100% - 22px));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 30;
+}
+
+.tab-btn {
+  border-radius: 10px;
+  background: transparent;
+  color: #334155;
+  font-size: 0.9rem;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+}
+
+.tab-btn.is-active {
+  background: linear-gradient(135deg, #0b7a75 0%, #10908a 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(11, 122, 117, 0.28);
+}
+
 @media (max-width: 640px) {
   body {
-    padding: 14px;
+    padding: 12px;
+  }
+
+  .app {
+    padding-bottom: 98px;
   }
 
   .card {
@@ -251,6 +313,6 @@ button.primary:hover {
   }
 
   h1 {
-    font-size: 1.7rem;
+    font-size: 1.65rem;
   }
 }
