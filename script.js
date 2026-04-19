@@ -1,0 +1,205 @@
+const STORAGE_KEY = "budget_app_expenses";
+
+// Inputs and display elements
+const hourlyWageInput = document.getElementById("hourlyWage");
+const hoursPerWeekInput = document.getElementById("hoursPerWeek");
+const weeklyIncomeDisplay = document.getElementById("weeklyIncome");
+const monthlyIncomeDisplay = document.getElementById("monthlyIncome");
+
+const expenseForm = document.getElementById("expenseForm");
+const expenseNameInput = document.getElementById("expenseName");
+const expenseAmountInput = document.getElementById("expenseAmount");
+const errorMessage = document.getElementById("errorMessage");
+
+const expenseList = document.getElementById("expenseList");
+const emptyState = document.getElementById("emptyState");
+
+const savingsGoalInput = document.getElementById("savingsGoal");
+const totalSpentDisplay = document.getElementById("totalSpent");
+const remainingMoneyDisplay = document.getElementById("remainingMoney");
+const safeToSpendDisplay = document.getElementById("safeToSpend");
+
+let expenses = loadExpenses();
+
+function toCurrency(value) {
+  return `$${value.toFixed(2)}`;
+}
+
+function parsePositiveNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function getMonthlyIncome() {
+  const weeklyIncome = getWeeklyIncome();
+  return weeklyIncome * 4;
+}
+
+function getWeeklyIncome() {
+  const wage = parsePositiveNumber(hourlyWageInput.value);
+  const hours = parsePositiveNumber(hoursPerWeekInput.value);
+
+  if (wage === null || hours === null) {
+    return 0;
+  }
+
+  return wage * hours;
+}
+
+function getSavingsGoal() {
+  const goal = parsePositiveNumber(savingsGoalInput.value);
+  return goal === null ? 0 : goal;
+}
+
+function getTotalExpenses() {
+  return expenses.reduce((total, expense) => total + expense.amount, 0);
+}
+
+function saveExpenses() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+}
+
+function loadExpenses() {
+  const storedData = localStorage.getItem(STORAGE_KEY);
+  if (!storedData) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(storedData);
+
+    // Keep only valid expense objects in case localStorage data is corrupted.
+    return Array.isArray(parsed)
+      ? parsed.filter(
+          (item) =>
+            item &&
+            typeof item.id === "number" &&
+            typeof item.name === "string" &&
+            typeof item.amount === "number" &&
+            item.amount >= 0
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderExpenseList() {
+  expenseList.innerHTML = "";
+
+  if (expenses.length === 0) {
+    emptyState.style.display = "block";
+    return;
+  }
+
+  emptyState.style.display = "none";
+
+  expenses.forEach((expense) => {
+    const item = document.createElement("li");
+    item.className = "expense-item";
+
+    const info = document.createElement("div");
+    info.className = "expense-info";
+
+    const name = document.createElement("span");
+    name.textContent = expense.name;
+
+    const amount = document.createElement("span");
+    amount.className = "expense-amount";
+    amount.textContent = toCurrency(expense.amount);
+
+    info.append(name, amount);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "delete-btn";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+      deleteExpense(expense.id);
+    });
+
+    item.append(info, deleteButton);
+    expenseList.appendChild(item);
+  });
+}
+
+function updateSummary() {
+  const weeklyIncome = getWeeklyIncome();
+  const monthlyIncome = getMonthlyIncome();
+  const totalSpent = getTotalExpenses();
+  const remainingMoney = monthlyIncome - totalSpent;
+  const safeToSpend = remainingMoney - getSavingsGoal();
+
+  weeklyIncomeDisplay.textContent = toCurrency(weeklyIncome);
+  monthlyIncomeDisplay.textContent = toCurrency(monthlyIncome);
+  totalSpentDisplay.textContent = toCurrency(totalSpent);
+  remainingMoneyDisplay.textContent = toCurrency(remainingMoney);
+  safeToSpendDisplay.textContent = toCurrency(safeToSpend);
+
+  remainingMoneyDisplay.style.color = remainingMoney < 0 ? "#b91c1c" : "#1f2937";
+  safeToSpendDisplay.style.color = safeToSpend < 0 ? "#b91c1c" : "#1f2937";
+}
+
+function showError(message) {
+  errorMessage.textContent = message;
+}
+
+function clearError() {
+  errorMessage.textContent = "";
+}
+
+function addExpense(event) {
+  event.preventDefault();
+
+  const name = expenseNameInput.value.trim();
+  const amount = parsePositiveNumber(expenseAmountInput.value);
+
+  if (!name) {
+    showError("Please enter an expense name.");
+    return;
+  }
+
+  if (amount === null || amount === 0) {
+    showError("Please enter a valid expense amount greater than 0.");
+    return;
+  }
+
+  const newExpense = {
+    id: Date.now(),
+    name,
+    amount,
+  };
+
+  expenses.push(newExpense);
+  saveExpenses();
+
+  expenseForm.reset();
+  clearError();
+
+  renderExpenseList();
+  updateSummary();
+}
+
+function deleteExpense(id) {
+  expenses = expenses.filter((expense) => expense.id !== id);
+  saveExpenses();
+  renderExpenseList();
+  updateSummary();
+}
+
+// Recalculate totals as the income and savings inputs change.
+hourlyWageInput.addEventListener("input", updateSummary);
+hoursPerWeekInput.addEventListener("input", updateSummary);
+savingsGoalInput.addEventListener("input", updateSummary);
+expenseForm.addEventListener("submit", addExpense);
+
+renderExpenseList();
+updateSummary();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+      console.error("Service worker registration failed:", error);
+    });
+  });
+}
