@@ -359,6 +359,34 @@ button.primary:hover {
   gap: 8px;
 }
 
+.summary-hero-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.summary-hero {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(11, 122, 117, 0.2) 0%, rgba(37, 99, 235, 0.18) 100%);
+  display: grid;
+  gap: 8px;
+}
+
+.summary-hero span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.summary-hero strong {
+  color: var(--text);
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+  line-height: 1.1;
+}
+
 .summary-row {
   margin: 0;
   border: 1px solid var(--line);
